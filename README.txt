@@ -1,9 +1,3 @@
-
-title:      Harry Potter
-
-author(s):  Albert Oliveras
-
-
-contact:    oliveras@cs.upc.edu
-
-(c) Universitat Politècnica de Catalunya, 2024
+cp AI.Dummy.o.Linux64 AIDummy.o
+make all
+./Game Demo Demo Demo Demo -s 30 <default.cnf >default.res
