@@ -21,11 +21,27 @@ struct PLAYER_NAME : public Player {
   /**
    * Types and attributes for your player can be defined here.
    */
+  const vector<Dir> dirs_mag = {Up,Down,Left,Right};
+  const vector<Dir> dirs_fant = {Up,Down,Left,Right,RU,UL,DR,LD};
 
   /**
    * Play method, invoked once per each round.
    */
   virtual void play () {
+        vector<int> ws = wizards(me());
+        int g = ghost(me());
+        if (round()<150) { //early game
+            for (int id : ws) {
+                Dir d = Right;
+                Pos new_pos = unit(id).pos + d;
+                if (pos_ok(new_pos) and cell(new_pos.i,new_pos.j).type != Wall) move(id,d);
+                else move(id,Up);
+            }
+            
+        }
+        else { // late game
+            return;
+        }
   }
 
 };
