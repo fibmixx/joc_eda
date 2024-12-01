@@ -1,5 +1,6 @@
 #include "Player.hh"
 #include <list>
+#include <vector>
 
 /**
  * Write the name of your player and save this file
@@ -23,6 +24,11 @@ struct PLAYER_NAME : public Player {
    */
   const vector<Dir> dirs_mag = {Up,Down,Left,Right};
   const vector<Dir> dirs_fant = {Up,Down,Left,Right,RU,UL,DR,LD};
+  typedef vector<int> VI;
+  typedef vector<VI> MI;
+  VI zzzzz = VI(60,-1);
+  MI visited = MI(60,zzzzz);
+  map<int,Pos> lugar;
 
   // Retorna solució vector de Dumbledore
   // Pre: El vector es pot agrupar en grups de mida 3 de manera que cada grup sumi la mateixa quantitat
@@ -93,16 +99,105 @@ struct PLAYER_NAME : public Player {
     return sol;
   }
 
+  Pos libro(int id) {
+    queue<Pos> q;
+    Pos p = unit(id).pos;
+    q.push(p);
+    visited[p.i][p.j] = id;
+    while (not q.empty()) {
+      //cerr << endl;
+      p = q.front();
+      //cerr << p.i << " " << p.j << endl;
+      //cerr << "---------------" << endl;
+      q.pop();
+      int i = p.i;
+      int j = p.j;
+      if (cell(i,j).book) { 
+        //cerr << unit(id).pos.i << " " << unit(id).pos.j << " : " << p.i << " " <<p.j;
+        return p;
+      }
+      else {
+        for (int k=0; k<4; ++k) {
+          Pos pp = p+dirs_mag[k];
+          if (pos_ok(pp) and cell(pp).type!=Wall and visited[pp.i][pp.j]!=id) {
+            //cerr << pp.i << " " << pp.j;
+            //cerr << " ok" << endl;
+            q.push(pp);
+            visited[pp.i][pp.j] = id;
+          }
+          //else if (cell(pp).type==Wall) cerr << pp.i << " " << pp.j << " X" << endl;
+        }
+      }
+    }
+    return unit(id).pos;
+  }
+
+  Dir movimiento(int id, Pos p, Pos dest) {
+    int i = p.i - dest.i;
+    int j = p.j - dest.j;
+    cerr << "Diferencia: " << i << " " << j << " caso: ";
+    if (i==j and i==0) {
+      lugar.erase(id);
+      cerr << "encontrado" << endl;
+      return Up;
+    }
+    if (j>0 and pos_ok(p+Left) and cell(p+Left).type!=Wall) {
+      cerr << 1 << endl;
+      return Left;
+    }
+    if (j<0 and pos_ok(p+Right) and cell(p+Right).type!=Wall) {
+    cerr << 2 << endl;
+    return Right;
+    }
+    if (i<0 and pos_ok(p+Down) and cell(p+Down).type!=Wall) { 
+    cerr << 3 << endl;
+    return Down;
+    }
+    if (i>0 and pos_ok(p+Up) and cell(p+Up).type!=Wall) {
+    cerr << 4 << endl;
+    return Up;
+    }
+    if (i<0) {
+    cerr << 5 << endl;
+    return Up;
+    }
+    cerr << 6 << endl;
+    return Down; 
+    
+  }
+
   /**
    * Play method, invoked once per each round.
    */
   virtual void play () {
+        cerr << "inicio_turno" << endl;
         vector<int> ws = wizards(me());
-        
-        
+        for (int id : ws) {
+          map<int,Pos>::iterator it;
+          it = lugar.find(id);
+          // cerr << " encontrado" << endl;
+          if (it==lugar.end()) {
+            Pos p = libro(id);
+            lugar.insert(pair<int,Pos>(id,p));
+            Dir d = movimiento(id, unit(id).pos,p);
+            cerr << id << ": "<< unit(id).pos <<" va a " << d << " para " << p << endl;
+            move(id,d);
+          }
+          else {
+            Pos p = it->second;
+            Dir d = movimiento(id, unit(id).pos,p);
+            cerr << id << ": "<< unit(id).pos <<" va a " << d << " para " << p << endl;
+            move(id,d);
+          }
+          //move(id,mejor_mov_mago(id));
+        }
+        //for(map<int,Pos>::iterator it = lugar.begin(); it!=lugar.end(); ++it) {
+        //  cerr << "id " << it->first << ": va a libro en " << it->second.i << " " << it->second.j << endl;
+        //}
         int g = ghost(me());
         int rondes_per_atac = unit(g).resting_rounds();
         if (rondes_per_atac == 0) spell(g,arcane());
+        
 
   }
 };
