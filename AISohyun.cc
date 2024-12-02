@@ -28,7 +28,9 @@ struct PLAYER_NAME : public Player {
   typedef vector<VI> MI;
   VI zzzzz = VI(60,-1);
   MI visited = MI(60,zzzzz);
-  map<int,Pos> lugar;
+  MI V2 = MI(60,zzzzz);
+  map<int,set<Pos>> lugar;
+  map<int,bool> prio;
 
   // Retorna solució vector de Dumbledore
   // Pre: El vector es pot agrupar en grups de mida 3 de manera que cada grup sumi la mateixa quantitat
@@ -99,9 +101,26 @@ struct PLAYER_NAME : public Player {
     return sol;
   }
 
+  bool bsearch(const vector<int>& A, const int& x,
+    int l, int u) {
+    if (l == u + 1) {
+      if (A[l]==x or A[u]==x) return true;
+      return false;
+    }
+    int m = (l + u) / 2;
+    if (A[m]==x) return true;
+    if (x < A[m])
+    return bsearch(A, x, l, m);
+    else
+    return bsearch(A, x, m, u);
+  }
+
+
+
   Pos libro(int id) {
     queue<Pos> q;
-    Pos p = unit(id).pos;
+    Pos x = unit(id).pos;
+    Pos p = x;
     q.push(p);
     visited[p.i][p.j] = id;
     while (not q.empty()) {
@@ -113,7 +132,7 @@ struct PLAYER_NAME : public Player {
       int i = p.i;
       int j = p.j;
       if (cell(i,j).book) { 
-        //cerr << unit(id).pos.i << " " << unit(id).pos.j << " : " << p.i << " " <<p.j;
+        //cerr << unit(id).pos.i << " " << unit(id).pos.j << " : " << p.i << " " <<p.j << endl;
         return p;
       }
       else {
@@ -135,35 +154,109 @@ struct PLAYER_NAME : public Player {
   Dir movimiento(int id, Pos p, Pos dest) {
     int i = p.i - dest.i;
     int j = p.j - dest.j;
-    cerr << "Diferencia: " << i << " " << j << " caso: ";
+    cerr << "Diferencia: " << i << " " << j << endl;
+    map<int,set<Pos>>::iterator l;
+    map<int,bool>::iterator m;
+    l = lugar.find(id);
+    //No esta
+    if (l==lugar.end()) {
+      lugar.insert(pair<int,set<Pos>>(id,set<Pos>()));
+      l = lugar.find(id);
+      prio.insert(pair<int,bool>(id,false));
+    }
     if (i==j and i==0) {
       lugar.erase(id);
+      prio.erase(id);
       cerr << "encontrado" << endl;
-      return Up;
+      dest = libro(id);
+      lugar.insert(pair<int,set<Pos>>(id,set<Pos>()));
+      l = lugar.find(id);
+      prio.insert(pair<int,bool>(id,false));
     }
-    if (j>0 and pos_ok(p+Left) and cell(p+Left).type!=Wall) {
-      cerr << 1 << endl;
-      return Left;
+    m = prio.find(id);
+    set<Pos>::iterator it;
+    l->second.insert(p);
+    cerr << "pasa" << endl;
+    if (j==0) m->second = true;
+    if (not m->second) {
+      if (j<0) {
+        it = l->second.find(p+Right);
+        cerr << "pasa" << endl;
+        if (pos_ok(p+Right) and cell(p+Right).type!=Wall and it==l->second.end()) 
+          return Right;
+        if (i>0) {
+          it = l->second.find(p+Up);
+          if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end()) 
+            return Up;
+          it = l->second.find(p+Down);
+          if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end()) 
+            return Down;
+        }
+        if (i<0) {
+          it = l->second.find(p+Down);
+          if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end()) 
+            return Down;
+          it = l->second.find(p+Up);
+          if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end()) 
+            return Up;
+        }
+        return Left;
+      }
+      else {
+        it = l->second.find(p+Left);
+        cerr << "pasa" << endl;
+        if (pos_ok(p+Left) and cell(p+Left).type!=Wall and it==l->second.end()) 
+          return Left;
+        if (i>0) {
+          it = l->second.find(p+Up);
+          if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end()) 
+            return Up;
+          it = l->second.find(p+Down);
+          if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end()) 
+            return Down;
+        }
+        if (i<0) {
+          it = l->second.find(p+Down);
+          if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end()) 
+            return Down;
+          it = l->second.find(p+Up);
+          if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end()) 
+            return Up;
+        }
+        return Right;
+      }
     }
-    if (j<0 and pos_ok(p+Right) and cell(p+Right).type!=Wall) {
-    cerr << 2 << endl;
-    return Right;
+  else {
+    if (i>0) {
+      it = l->second.find(p+Up);
+      if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end())  
+        return Up;
+      it = l->second.find(p+Left);
+        if (pos_ok(p+Left) and cell(p+Left).type!=Wall and it==l->second.end()) 
+          return Left;
+      it = l->second.find(p+Right);
+      if (pos_ok(p+Right) and cell(p+(Right)).type!=Wall and it==l->second.end()) 
+          return Right;
+      return Down;
+      }
+    else {
+      it = l->second.find(p+Down);
+      if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end()) 
+        return Down;
+      if (j>0) {  
+        it = l->second.find(p+Left);
+          if (pos_ok(p+Left) and cell(p+Left).type!=Wall and it==l->second.end()) 
+            return Left;
+      }
+      else {
+        it = l->second.find(p+Right);
+        if (pos_ok(p+Right) and cell(p+(Right)).type!=Wall and it==l->second.end()) 
+            return Right;
+      }
+      return Down;
     }
-    if (i<0 and pos_ok(p+Down) and cell(p+Down).type!=Wall) { 
-    cerr << 3 << endl;
-    return Down;
     }
-    if (i>0 and pos_ok(p+Up) and cell(p+Up).type!=Wall) {
-    cerr << 4 << endl;
     return Up;
-    }
-    if (i<0) {
-    cerr << 5 << endl;
-    return Up;
-    }
-    cerr << 6 << endl;
-    return Down; 
-    
   }
 
   /**
@@ -172,28 +265,12 @@ struct PLAYER_NAME : public Player {
   virtual void play () {
         cerr << "inicio_turno" << endl;
         vector<int> ws = wizards(me());
-        for (int id : ws) {
-          map<int,Pos>::iterator it;
-          it = lugar.find(id);
-          // cerr << " encontrado" << endl;
-          if (it==lugar.end()) {
-            Pos p = libro(id);
-            lugar.insert(pair<int,Pos>(id,p));
-            Dir d = movimiento(id, unit(id).pos,p);
-            cerr << id << ": "<< unit(id).pos <<" va a " << d << " para " << p << endl;
-            move(id,d);
-          }
-          else {
-            Pos p = it->second;
-            Dir d = movimiento(id, unit(id).pos,p);
-            cerr << id << ": "<< unit(id).pos <<" va a " << d << " para " << p << endl;
-            move(id,d);
-          }
-          //move(id,mejor_mov_mago(id));
-        }
-        //for(map<int,Pos>::iterator it = lugar.begin(); it!=lugar.end(); ++it) {
-        //  cerr << "id " << it->first << ": va a libro en " << it->second.i << " " << it->second.j << endl;
-        //}
+        for (int id : ws) {      
+          Pos p = libro(id);
+          Dir d = movimiento(id,unit(id).pos,p);
+          cerr << id << ": "<< unit(id).pos <<" va a " << p << endl;
+          move(id,d);
+        } 
         int g = ghost(me());
         int rondes_per_atac = unit(g).resting_rounds();
         if (rondes_per_atac == 0) spell(g,arcane());
