@@ -6,7 +6,7 @@
  * Write the name of your player and save this file
  * with the same name and .cc extension.
  */
-#define PLAYER_NAME xxiwn3
+#define PLAYER_NAME xxiwn4
 
 
 struct PLAYER_NAME : public Player {
@@ -181,22 +181,22 @@ struct PLAYER_NAME : public Player {
       if (j<0) {
         it = l->second.find(p+Right);
         cerr << "pasa" << endl;
-        if (pos_ok(p+Right) and cell(p+Right).type!=Wall and it==l->second.end()) 
+        if (pos_ok(p+Right) and cell(p+Right).type!=Wall and it==l->second.end() and cell(p+Right).id==-1) 
           return Right;
         if (i>0) {
           it = l->second.find(p+Up);
-          if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end()) 
+          if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end() and cell(p+Right).id==-1) 
             return Up;
           it = l->second.find(p+Down);
-          if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end()) 
+          if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end() and cell(p+Right).id==-1) 
             return Down;
         }
         if (i<0) {
           it = l->second.find(p+Down);
-          if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end()) 
+          if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end() and cell(p+Right).id==-1) 
             return Down;
           it = l->second.find(p+Up);
-          if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end()) 
+          if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end() and cell(p+Right).id==-1) 
             return Up;
         }
         return Left;
@@ -204,22 +204,22 @@ struct PLAYER_NAME : public Player {
       else {
         it = l->second.find(p+Left);
         cerr << "pasa" << endl;
-        if (pos_ok(p+Left) and cell(p+Left).type!=Wall and it==l->second.end()) 
+        if (pos_ok(p+Left) and cell(p+Left).type!=Wall and it==l->second.end() and cell(p+Right).id==-1) 
           return Left;
         if (i>0) {
           it = l->second.find(p+Up);
-          if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end()) 
+          if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end() and cell(p+Right).id==-1) 
             return Up;
           it = l->second.find(p+Down);
-          if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end()) 
+          if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end() and cell(p+Right).id==-1) 
             return Down;
         }
         if (i<0) {
           it = l->second.find(p+Down);
-          if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end()) 
+          if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end() and cell(p+Right).id==-1) 
             return Down;
           it = l->second.find(p+Up);
-          if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end()) 
+          if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end() and cell(p+Right).id==-1) 
             return Up;
         }
         return Right;
@@ -228,28 +228,28 @@ struct PLAYER_NAME : public Player {
   else {
     if (i>0) {
       it = l->second.find(p+Up);
-      if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end())  
+      if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end() and cell(p+Right).id==-1)  
         return Up;
       it = l->second.find(p+Left);
-        if (pos_ok(p+Left) and cell(p+Left).type!=Wall and it==l->second.end()) 
+        if (pos_ok(p+Left) and cell(p+Left).type!=Wall and it==l->second.end() and cell(p+Right).id==-1) 
           return Left;
       it = l->second.find(p+Right);
-      if (pos_ok(p+Right) and cell(p+(Right)).type!=Wall and it==l->second.end()) 
+      if (pos_ok(p+Right) and cell(p+(Right)).type!=Wall and it==l->second.end() and cell(p+Right).id==-1) 
           return Right;
       return Down;
       }
     else {
       it = l->second.find(p+Down);
-      if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end()) 
+      if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end() and cell(p+Right).id==-1) 
         return Down;
       if (j>0) {  
         it = l->second.find(p+Left);
-          if (pos_ok(p+Left) and cell(p+Left).type!=Wall and it==l->second.end()) 
+          if (pos_ok(p+Left) and cell(p+Left).type!=Wall and it==l->second.end() and cell(p+Right).id==-1) 
             return Left;
       }
       else {
         it = l->second.find(p+Right);
-        if (pos_ok(p+Right) and cell(p+(Right)).type!=Wall and it==l->second.end()) 
+        if (pos_ok(p+Right) and cell(p+(Right)).type!=Wall and it==l->second.end() and cell(p+Right).id==-1) 
             return Right;
       }
       return Down;
