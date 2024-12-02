@@ -28,7 +28,6 @@ struct PLAYER_NAME : public Player {
   typedef vector<VI> MI;
   VI zzzzz = VI(60,-1);
   MI visited = MI(60,zzzzz);
-  MI V2 = MI(60,zzzzz);
   map<int,set<Pos>> lugar;
   map<int,bool> prio;
 
