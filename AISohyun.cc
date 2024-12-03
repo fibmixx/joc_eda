@@ -26,10 +26,6 @@ struct PLAYER_NAME : public Player {
   const vector<Dir> dirs_fant = {Up,Down,Left,Right,RU,UL,DR,LD};
   typedef vector<int> VI;
   typedef vector<VI> MI;
-  VI zzzzz = VI(60,-1);
-  MI visited = MI(60,zzzzz);
-  map<int,set<Pos>> lugar;
-  map<int,bool> prio;
 
   // Retorna solució vector de Dumbledore
   // Pre: El vector es pot agrupar en grups de mida 3 de manera que cada grup sumi la mateixa quantitat
@@ -100,8 +96,7 @@ struct PLAYER_NAME : public Player {
     return sol;
   }
 
-  bool bsearch(const vector<int>& A, const int& x,
-    int l, int u) {
+  bool bsearch(const vector<int>& A, const int& x, int l, int u) {
     if (l == u + 1) {
       if (A[l]==x or A[u]==x) return true;
       return false;
@@ -114,167 +109,130 @@ struct PLAYER_NAME : public Player {
     return bsearch(A, x, m, u);
   }
 
-
-
-  Pos libro(int id) {
-    queue<Pos> q;
-    Pos x = unit(id).pos;
-    Pos p = x;
+  int libro(Pos p, int id, MI mat) {
+    queue<Pos> q; 
     q.push(p);
-    visited[p.i][p.j] = id;
+    mat[p.i][p.j] = 0;
+    int it = 0;
     while (not q.empty()) {
-      //cerr << endl;
       p = q.front();
-      //cerr << p.i << " " << p.j << endl;
-      //cerr << "---------------" << endl;
       q.pop();
       int i = p.i;
       int j = p.j;
       if (cell(i,j).book) { 
-        //cerr << unit(id).pos.i << " " << unit(id).pos.j << " : " << p.i << " " <<p.j << endl;
-        return p;
+        //cerr << unit(id).pos.i << " " << unit(id).pos.j << " encuentra en: " << p.i << " " <<p.j << " diferencia de " << p.i-unit(id).pos.i << " " << p.j-unit(id).pos.j <<endl;
+        return mat[i][j];
       }
       else {
         for (int k=0; k<4; ++k) {
           Pos pp = p+dirs_mag[k];
-          if (pos_ok(pp) and cell(pp).type!=Wall and visited[pp.i][pp.j]!=id) {
-            //cerr << pp.i << " " << pp.j;
-            //cerr << " ok" << endl;
+          if (pos_ok(pp) and cell(pp).type!=Wall and mat[pp.i][pp.j]==-1) {
             q.push(pp);
-            visited[pp.i][pp.j] = id;
+            mat[pp.i][pp.j] = 1+mat[i][j];
           }
-          //else if (cell(pp).type==Wall) cerr << pp.i << " " << pp.j << " X" << endl;
         }
       }
     }
-    return unit(id).pos;
+    return 1000;
   }
 
-  Dir movimiento(int id, Pos p, Pos dest) {
-    int i = p.i - dest.i;
-    int j = p.j - dest.j;
-    cerr << "Diferencia: " << i << " " << j << endl;
-    map<int,set<Pos>>::iterator l;
-    map<int,bool>::iterator m;
-    l = lugar.find(id);
-    //No esta
-    if (l==lugar.end()) {
-      lugar.insert(pair<int,set<Pos>>(id,set<Pos>()));
-      l = lugar.find(id);
-      prio.insert(pair<int,bool>(id,false));
+  Dir pos(int id) {
+    MI mat(60,VI(60,-1));
+    VI x(4,10000);
+    Pos p = unit(id).pos;
+    mat[p.i][p.j]=1;
+    for (int k=0; k<4; ++k) {
+      Pos pp = p+dirs_mag[k];
+      if (pos_ok(pp) and cell(pp).type!=Wall) {
+        x[k] = libro(pp,id,mat);
+        cerr << p << dirs_mag[k] << " --- " << x[k] <<endl;
+      }
     }
-    if (i==j and i==0) {
-      lugar.erase(id);
-      prio.erase(id);
-      cerr << "encontrado" << endl;
-      dest = libro(id);
-      lugar.insert(pair<int,set<Pos>>(id,set<Pos>()));
-      l = lugar.find(id);
-      prio.insert(pair<int,bool>(id,false));
+    for (int i = 0; i<4; ++i) cerr << x[i] << " ";
+    cerr <<endl;
+    int min = 1000;
+    int posmin = 0;
+    for (int i = 0; i<4; ++i) {
+      if (x[i]<min)  {
+        min = x[i];
+        posmin = i;
+        }
     }
-    m = prio.find(id);
-    set<Pos>::iterator it;
-    l->second.insert(p);
-    cerr << "pasa" << endl;
-    if (j==0) m->second = true;
-    if (not m->second) {
-      if (j<0) {
-        it = l->second.find(p+Right);
-        cerr << "pasa" << endl;
-        if (pos_ok(p+Right) and cell(p+Right).type!=Wall and it==l->second.end()) 
-          return Right;
-        if (i>0) {
-          it = l->second.find(p+Up);
-          if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end()) 
-            return Up;
-          it = l->second.find(p+Down);
-          if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end()) 
-            return Down;
-        }
-        if (i<0) {
-          it = l->second.find(p+Down);
-          if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end()) 
-            return Down;
-          it = l->second.find(p+Up);
-          if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end()) 
-            return Up;
-        }
-        return Left;
+    //cerr << "distancia " << x[min];
+    return dirs_mag[posmin];
+  }
+
+    int libro_f(Pos p, int id, MI mat) {
+    queue<Pos> q; 
+    q.push(p);
+    mat[p.i][p.j] = 0;
+    int it = 0;
+    while (not q.empty()) {
+      p = q.front();
+      q.pop();
+      int i = p.i;
+      int j = p.j;
+      if (cell(i,j).book) { 
+        //cerr << unit(id).pos.i << " " << unit(id).pos.j << " encuentra en: " << p.i << " " <<p.j << " diferencia de " << p.i-unit(id).pos.i << " " << p.j-unit(id).pos.j <<endl;
+        return mat[i][j];
       }
       else {
-        it = l->second.find(p+Left);
-        cerr << "pasa" << endl;
-        if (pos_ok(p+Left) and cell(p+Left).type!=Wall and it==l->second.end()) 
-          return Left;
-        if (i>0) {
-          it = l->second.find(p+Up);
-          if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end()) 
-            return Up;
-          it = l->second.find(p+Down);
-          if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end()) 
-            return Down;
+        for (int k=0; k<8; ++k) {
+          Pos pp = p+dirs_fant[k];
+          if (pos_ok(pp) and cell(pp).type!=Wall and mat[pp.i][pp.j]==-1) {
+            q.push(pp);
+            mat[pp.i][pp.j] = 1+mat[i][j];
+          }
         }
-        if (i<0) {
-          it = l->second.find(p+Down);
-          if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end()) 
-            return Down;
-          it = l->second.find(p+Up);
-          if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end()) 
-            return Up;
+      }
+    }
+    return 1000;
+  }
+
+  Dir pos_f(int id) {
+    MI mat(60,VI(60,-1));
+    VI x(8,10000);
+    Pos p = unit(id).pos;
+    mat[p.i][p.j]=1;
+    for (int k=0; k<8; ++k) {
+      Pos pp = p+dirs_fant[k];
+      if (pos_ok(pp) and cell(pp).type!=Wall) {
+        x[k] = libro(pp,id,mat);
+        cerr << p << dirs_fant[k] << " --- " << x[k] <<endl;
+      }
+    }
+    for (int i = 0; i<8; ++i) cerr << x[i] << " ";
+    cerr <<endl;
+    int min = 1000;
+    int posmin = 0;
+    for (int i = 0; i<8; ++i) {
+      if (x[i]<min)  {
+        min = x[i];
+        posmin = i;
         }
-        return Right;
-      }
     }
-  else {
-    if (i>0) {
-      it = l->second.find(p+Up);
-      if (pos_ok(p+Up) and cell(p+(Up)).type!=Wall and it==l->second.end())  
-        return Up;
-      it = l->second.find(p+Left);
-        if (pos_ok(p+Left) and cell(p+Left).type!=Wall and it==l->second.end()) 
-          return Left;
-      it = l->second.find(p+Right);
-      if (pos_ok(p+Right) and cell(p+(Right)).type!=Wall and it==l->second.end()) 
-          return Right;
-      return Down;
-      }
-    else {
-      it = l->second.find(p+Down);
-      if (pos_ok(p+Down) and cell(p+(Down)).type!=Wall and it==l->second.end()) 
-        return Down;
-      if (j>0) {  
-        it = l->second.find(p+Left);
-          if (pos_ok(p+Left) and cell(p+Left).type!=Wall and it==l->second.end()) 
-            return Left;
-      }
-      else {
-        it = l->second.find(p+Right);
-        if (pos_ok(p+Right) and cell(p+(Right)).type!=Wall and it==l->second.end()) 
-            return Right;
-      }
-      return Down;
-    }
-    }
-    return Up;
+    //cerr << "distancia " << x[min];
+    return dirs_mag[posmin];
   }
 
   /**
    * Play method, invoked once per each round.
    */
   virtual void play () {
-        cerr << "inicio_turno" << endl;
+        //cerr << "inicio_turno" << endl;
         vector<int> ws = wizards(me());
         for (int id : ws) {      
-          Pos p = libro(id);
-          Dir d = movimiento(id,unit(id).pos,p);
-          cerr << id << ": "<< unit(id).pos <<" va a " << p << endl;
+          Dir d = pos(id);
+          cerr << id << ": "<< unit(id).pos << " va a " << d << endl;
           move(id,d);
         } 
         int g = ghost(me());
         int rondes_per_atac = unit(g).resting_rounds();
         if (rondes_per_atac == 0) spell(g,arcane());
-        
-
+        else {
+          cerr << "fantasma" << endl;
+          move (g,pos_f(g));
+        }
   }
 };
 
