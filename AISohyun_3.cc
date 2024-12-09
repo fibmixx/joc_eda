@@ -280,7 +280,8 @@ struct PLAYER_NAME : public Player {
         //cerr << "inicio_turno" << endl;
         vector<int> ws = wizards(me());
         for (int id : ws) {      
-          Dir d = pos(id);
+          if (round()<100) Dir d = pos(id);
+          else Dir d = pos_late(id);
           //cerr << id << ": "<< unit(id).pos << " va a " << d << endl;
           move(id,d);
         } 
