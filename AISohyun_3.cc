@@ -177,7 +177,7 @@ struct PLAYER_NAME : public Player {
       q.pop();
       int i = p.i;
       int j = p.j;
-      if (cell(i,j).book or cell(i,j).id!=-1 and not isyour(cell(i,j).id)) { 
+      if (cell(i,j).book or (cell(i,j).id!=-1 and not isyour(cell(i,j).id))) { 
         //cerr << unit(id).pos.i << " " << unit(id).pos.j << " encuentra en: " << p.i << " " <<p.j << " diferencia de " << p.i-unit(id).pos.i << " " << p.j-unit(id).pos.j <<endl;
         return mat[i][j];
       }
@@ -280,10 +280,13 @@ struct PLAYER_NAME : public Player {
         //cerr << "inicio_turno" << endl;
         vector<int> ws = wizards(me());
         for (int id : ws) {      
-          if (round()<100) Dir d = pos(id);
-          else Dir d = pos_late(id);
+          if (round()<100)  {
+            Dir d = pos(id);
+            move(id,d);
+          }
+          else { Dir d = pos_late(id); move(id,d); }
           //cerr << id << ": "<< unit(id).pos << " va a " << d << endl;
-          move(id,d);
+          
         } 
         int g = ghost(me());
         int rondes_per_atac = unit(g).resting_rounds();
